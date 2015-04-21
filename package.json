@@ -1,27 +1,28 @@
 {
-  "name": "cs10-node-scripts",
-  "version": "0.0.0",
-  "description": "Some tools for testing or automating stuff",
-  "main": "./script.js",
+  "name": "canvas-grade-uploader",
+  "version": "0.0.1",
+  "description": "Upload a CSV file to bCourses",
+  "main": "./upload-grades.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "github.com/cs10/cs10"
+    "url": "github.com/cs10/grade-uploader"
   },
   "dependencies": {
     "argparse": "^1.0.2",
-    "node-canvaslms": "cs10/node-canvaslms",
+    "node-canvaslms": "0.0.6",
     "papaparse": "^4.1.0"
   },
   "keywords": [
-    "education"
+    "grades",
+    "canvas-lms"
   ],
   "author": "Michael Ball",
   "license": "BSD",
   "bugs": {
-    "url": "https://github.com/cs10/cs10/issues"
+    "url": "https://github.com/cs10/grade-uploader/issues"
   },
-  "homepage": "https://github.com/cs10/cs10"
+  "homepage": "https://github.com/cs10/grade-uploader"
 }
