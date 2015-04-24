@@ -1,37 +1,92 @@
-// Upload grades from Pandagrader to bCourses
+#! /usr/bin/env node
 
+// Upload grades from Pandagrader to bCourses
 
 var Canvas = require('node-canvas-lms').Canvas;
 var fs = require('fs');
 var path = require('path');
+var ArgumentParser = require('argparse').ArgumentParser;
+var papa = require('papaparse');
 
-// Get Command Line Args
-var args = process.argv;
-var token = process.env.CANVAS_TOKEN;
+// Handle Command Line Args
+var parser = new ArgumentParser({
+  version: '0.0.1',
+  addHelp: true,
+  description: 'This script uploads a CSV file to the specified Canvas course.',
+  epilogue: 'THIS NEEDS TO BE WRITTEN...should describe process for getting a token.'
+});
 
-// First two args are node and the script filename
-if (args.length < 4) {
-    console.log('GRADESCOPE UPLOADER: node canvas-grades.js <grades.csv> <assnID> [canvas token]');
-    process.exit(1);
+parser.addArgument(
+  [ '-c', '--course' ],
+  { help: 'This is the Canvas ID of the course.',
+    required: true } );
+parser.addArgument(
+  [ '-a', '--assignment' ],
+  { help: 'This is the Canvas ID of the assignment to post grades to.',
+    required: true } );
+parser.addArgument(
+  ['grades_file'],
+  { help: 'A CSV file of grades. It must include a "SID" column and a "grade" column.',
+    
+    positional: 1 } );
+parser.addArgument(
+  [ '-u', '--url' ],
+  { help: 'Specify a URL of the Canvas instance to use.\n\tThis currently defaults to Berkeley bCourses.',
+    required: false } );
+parser.addArgument(
+  [ '-t', '--token' ],
+  { help: 'An API token is required to upload scores. Use this option or export CANVAS_TOKEN.',
+    required: false } );
+parser.addArgument(
+  [ '-s', '--sid-type' ],
+  { help: 'Canvas SIS id format.',
+    defaultValue: 'sis_user_id',
+    // choices: [
+    //     'id',
+    //     'sis_login_id',
+    //     'sis_user_id'
+    // ],
+    required: false } );
+
+
+// Verify Args Exist
+var defaultCanvasUrl = 'https://bcourses.berkeley.edu/'
+var TOKEN,
+    ASSIGNMENT_ID,
+    COURSE_ID,
+    FILE,
+    CANVAS_URL;
+
+function verifyArgs() {
+    var args = parser.parseArgs();
+    var errors = [];
+
+    if (!TOKEN) {
+        errors.push('Please export the CANVAS_TOKEN variable or provide token with -t.');
+    }
+
+    if (errors) {
+        console.error('The following errors occurred:');
+        console.error('\t' + errors.join('\n\t'));
+        parser.printHelp();
+        process.exit(1);
+    }
 }
-if (!token & args.length < 5) {
-    console.log('Please export the CANVAS_TOKEN variable or provide a token as input.');
-    process.exit(1);
-}
 
-var gradesFile = path.resolve(process.cwd(), args[2]);
-
-var ASSIGNMENT_ID = args[3];
-console.log('Uploading Scores for: ' + ASSIGNMENT_ID);
-
-if (args[4]) {
-    token = args[4];
-}
+verifyArgs();
+// var gradesFile = path.resolve(process.cwd(), args[2]);
+//
+// var ASSIGNMENT_ID = args[3];
+// console.log('Uploading Scores for: ' + ASSIGNMENT_ID);
+//
+// if (args[4]) {
+//     token = args[4];
+// }
 
 // Specify encoding to return a string
-var grades = fs.readFileSync(gradesFile, {encoding: 'utf8'});
+var grades = fs.readFileSync(FILE, { encoding: 'utf8'});
 
-var cs10 = new Canvas('https://bcourses.berkeley.edu', { token: token } );
+var cs10 = new Canvas(CANVAS_URL, { token: TOKEN } );
 
 var data = grades.split('\n');
 
