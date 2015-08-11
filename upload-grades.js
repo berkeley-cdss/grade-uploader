@@ -27,7 +27,6 @@ parser.addArgument(
 parser.addArgument(
   ['grades_file'],
   { help: 'A CSV file of grades. It must include a "SID" column and a "grade" column.',
-    
     positional: 1 } );
 parser.addArgument(
   [ '-u', '--url' ],
