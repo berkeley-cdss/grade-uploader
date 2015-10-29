@@ -35,36 +35,43 @@ parser.addArgument(
 parser.addArgument(
   [ '-t', '--token' ],
   { help: 'An API token is required to upload scores. Use this option or export CANVAS_TOKEN.',
+    defaultValue: process.env.CANVAS_TOKEN,
     required: false } );
 parser.addArgument(
   [ '-s', '--sid-type' ],
-  { help: 'Canvas SIS id format.',
+  { help: 'Canvas SIS id format. This currently defaults to `sis_user_id` which is used at UC Berkeley.' +
+        '\nThis controls what ID options Canvas uses to find a student.',
     defaultValue: 'sis_user_id',
-    // choices: [
-    //     'id',
-    //     'sis_login_id',
-    //     'sis_user_id'
-    // ],
+    choices: [
+        '""',
+        'sis_login_id',
+        'sis_user_id'
+    ],
     required: false } );
 
 
 // Verify Args Exist
 var defaultCanvasUrl = 'https://bcourses.berkeley.edu/'
-var TOKEN,
-    ASSIGNMENT_ID,
-    COURSE_ID,
-    FILE,
-    CANVAS_URL;
+var ARG_VALS;
 
 function verifyArgs() {
-    var args = parser.parseArgs();
-    var errors = [];
+    ARG_VALS = parser.parseArgs();
+    var errors = [],
+        token;
 
-    if (!TOKEN) {
+    console.log(ARG_VALS);
+    token = process.env.CANVAS_TOKEN;
+
+    if (!token && !ARG_VALS.token) {
         errors.push('Please export the CANVAS_TOKEN variable or provide token with -t.');
     }
 
-    if (errors) {
+    // Simplification for Berkeley
+    ARG_VALS.url = ARG_VALS.url || defaultCanvasUrl;
+    // Handle a default token
+    ARG_VALS.token = ARG_VALS.token || token
+
+    if (errors.length) {
         console.error('The following errors occurred:');
         console.error('\t' + errors.join('\n\t'));
         parser.printHelp();
@@ -82,13 +89,16 @@ verifyArgs();
 //     token = args[4];
 // }
 
+var grades, course, data;
+
 // Specify encoding to return a string
-var grades = fs.readFileSync(FILE, { encoding: 'utf8'});
+grades = fs.readFileSync(ARG_VALS.grades_file, { encoding: 'utf8'});
 
-var cs10 = new Canvas(CANVAS_URL, { token: TOKEN } );
-    
-var data = grades.split('\n');
+course = new Canvas(ARG_VALS.url, { token: ARG_VALS.token } );
 
+data = grades.split('\n');
+
+// TODO: Use the papaparse library.
 // Create a 2D array.
 for (var i = 0; i < data.length; i += 1) {
     data[i] = data[i].split(',');
@@ -104,23 +114,20 @@ var scoreCol = header.indexOf(SCORE);
 var nameCol  = header.indexOf(NAME);
 var sidCol   = header.indexOf(SID);
 
-var COURSE_ID = '1301472'; // CS10 Spring 2015
-
-
 // Now post the grades....
-// TODO: The extenstion students need a mapping like for lab checkoffs.
+// TODO: The extenstion students need a mapping like for CS10 lab checkoffs.
 function postGrade(name, sid, score, num) {
     var scoreForm      = 'submission[posted_grade]=' + score,
-        submissionBase = '/courses/' + COURSE_ID +
-                         '/assignments/' + ASSIGNMENT_ID + '/submissions/',
-        submissionPath = submissionBase + 'sis_user_id:',
+        submissionBase = '/courses/' + ARG_VALS.course +
+                         '/assignments/' + ARG_VALS.assignments + '/submissions/',
+        submissionPath = submissionBase + ARG_VALS.sid_type + ':',
         submissionALT  = submissionBase + 'sis_login_id:';
 
     // FIXME -- this is dumb.
     submissionPath += sid;
     submissionALT  += sid;
 
-    cs10.put(submissionPath , '', scoreForm,
+    course.put(submissionPath , '', scoreForm,
             callback(name, sid, score, i));
 
     // Access in SID and points in the callback
@@ -144,7 +151,7 @@ function postGrade(name, sid, score, num) {
                 }
                 errorMsg += '\n\t' + submissionPath;
                 console.log(errorMsg);
-                // cs10.put(submissionALT , '', scoreForm,
+                // course.put(submissionALT , '', scoreForm,
 //                     loginCallback(name, sid, score));
             }
         };
