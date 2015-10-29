@@ -59,7 +59,6 @@ function verifyArgs() {
     var errors = [],
         token;
 
-    console.log(ARG_VALS);
     token = process.env.CANVAS_TOKEN;
 
     if (!token && !ARG_VALS.token) {
@@ -99,10 +98,7 @@ course = new Canvas(ARG_VALS.url, { token: ARG_VALS.token } );
 data = grades.split('\n');
 
 // TODO: Use the papaparse library.
-// Create a 2D array.
-for (var i = 0; i < data.length; i += 1) {
-    data[i] = data[i].split(',');
-}
+data = data.map(function(item) { return item.split(',') });
 
 // Must exactly match the CSV first row!
 var header = data[0];

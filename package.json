@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "argparse": "^1.0.2",
-    "node-canvas-lms": "0.0.6",
+    "node-canvas-lms": "latest",
     "papaparse": "^4.1.0"
   },
   "keywords": [
