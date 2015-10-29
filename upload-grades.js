@@ -2,7 +2,7 @@
 
 // Upload grades from Pandagrader to bCourses
 
-var Canvas = require('node-canvas-lms').Canvas;
+var Canvas = require('node-canvas-lms');
 var fs = require('fs');
 var path = require('path');
 var ArgumentParser = require('argparse').ArgumentParser;
@@ -86,7 +86,7 @@ verifyArgs();
 var grades = fs.readFileSync(FILE, { encoding: 'utf8'});
 
 var cs10 = new Canvas(CANVAS_URL, { token: TOKEN } );
-
+    
 var data = grades.split('\n');
 
 // Create a 2D array.
