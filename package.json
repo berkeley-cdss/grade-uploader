@@ -1,7 +1,7 @@
 {
   "name": "canvas-grade-uploader",
-  "version": "0.0.1",
-  "description": "Upload a CSV file to bCourses",
+  "version": "0.1.0",
+  "description": "Upload a CSV file of grades to Canvas",
   "main": "./upload-grades.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,12 +17,20 @@
   },
   "keywords": [
     "grades",
-    "canvas-lms"
+    "canvas-lms",
+    "canvas",
+    "learning",
+    "education",
+    "csv",
+    "lms"
   ],
   "author": "Michael Ball",
   "license": "BSD",
   "bugs": {
     "url": "https://github.com/cs10/grade-uploader/issues"
+  },
+  "bin": {
+    "upload-grades": "./upload-grades.js"
   },
   "homepage": "https://github.com/cs10/grade-uploader"
 }

@@ -17,58 +17,70 @@ var parser = new ArgumentParser({
 });
 
 parser.addArgument(
-  [ '-c', '--course' ],
-  { help: 'This is the Canvas ID of the course.',
-    required: true } );
+    [ '-c', '--course-id' ],
+    { 
+        help: 'This is the Canvas ID of the course.',
+        required: true
+    }
+);
 parser.addArgument(
-  [ '-a', '--assignment' ],
-  { help: 'This is the Canvas ID of the assignment to post grades to.',
-    required: true } );
+    [ '-a', '--assignment-id' ],
+    {
+        help: 'This is the Canvas ID of the assignment to post grades to.',
+        required: true
+    }
+);
 parser.addArgument(
-  ['grades_file'],
-  { help: 'A CSV file of grades. It must include a "SID" column and a "grade" column.',
-    positional: 1 } );
+    ['grades-csv'],
+    {
+        help: 'A CSV file of grades. It must include a "SID" column and a "grade" column.',
+        positional: 1
+    }
+);
 parser.addArgument(
-  [ '-u', '--url' ],
-  { help: 'Specify a URL of the Canvas instance to use.\n\tThis currently defaults to Berkeley bCourses.',
-    required: false } );
+    [ '-u', '--url' ],
+    {
+        help: 'Specify a URL of the Canvas instance to use.\n\tThis currently defaults to Berkeley bCourses.',
+        defaultValue: 'https://bcourses.berkeley.edu',
+        required: false
+    }
+);
 parser.addArgument(
-  [ '-t', '--token' ],
-  { help: 'An API token is required to upload scores. Use this option or export CANVAS_TOKEN.',
-    defaultValue: process.env.CANVAS_TOKEN,
-    required: false } );
+    [ '-t', '--token' ],
+    {
+        help: 'An API token is required to upload scores. Use this option or export CANVAS_TOKEN.',
+        defaultValue: process.env.CANVAS_TOKEN,
+        required: false
+    }
+);
 parser.addArgument(
-  [ '-s', '--sid-type' ],
-  { help: 'Canvas SIS id format. This currently defaults to `sis_user_id` which is used at UC Berkeley.' +
+    [ '-uid', '--user-id-format' ],
+    {
+        // TODO: Un-Berkeley-ify this option
+        help: 'Canvas SIS id format. This currently defaults to `sis_user_id` which is used at UC Berkeley.' +
         '\nThis controls what ID options Canvas uses to find a student.',
-    defaultValue: 'sis_user_id',
-    choices: [
-        '""',
-        'sis_login_id',
-        'sis_user_id'
-    ],
-    required: false } );
+        defaultValue: 'sis_user_id',
+        choices: [
+            '""',
+            'sis_login_id',
+            'sis_user_id'
+        ],
+        required: false
+    }
+);
 
 
 // Verify Args Exist
-var defaultCanvasUrl = 'https://bcourses.berkeley.edu/'
 var ARG_VALS;
 
 function verifyArgs() {
     ARG_VALS = parser.parseArgs();
-    var errors = [],
-        token;
+    var errors = [];
 
-    token = process.env.CANVAS_TOKEN;
-
-    if (!token && !ARG_VALS.token) {
+    // This check is necessary because CANVAS_TOKEN could be undefied.
+    if (!ARG_VALS.token) {
         errors.push('Please export the CANVAS_TOKEN variable or provide token with -t.');
     }
-
-    // Simplification for Berkeley
-    ARG_VALS.url = ARG_VALS.url || defaultCanvasUrl;
-    // Handle a default token
-    ARG_VALS.token = ARG_VALS.token || token
 
     if (errors.length) {
         console.error('The following errors occurred:');
@@ -79,14 +91,6 @@ function verifyArgs() {
 }
 
 verifyArgs();
-// var gradesFile = path.resolve(process.cwd(), args[2]);
-//
-// var ASSIGNMENT_ID = args[3];
-// console.log('Uploading Scores for: ' + ASSIGNMENT_ID);
-//
-// if (args[4]) {
-//     token = args[4];
-// }
 
 var grades, course, data;
 
