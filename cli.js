@@ -1,12 +1,11 @@
 #! /usr/bin/env node
 
-// Upload grades from Pandagrader to bCourses
+// Upload grades from a CSV file to Canvas
 
-var Canvas = require('node-canvas-lms');
+var postGrades = require('./uploader.js');
 var fs = require('fs');
 var path = require('path');
 var ArgumentParser = require('argparse').ArgumentParser;
-var papa = require('papaparse');
 
 // Handle Command Line Args
 var parser = new ArgumentParser({
@@ -71,7 +70,7 @@ parser.addArgument(
 
 
 // Verify Args Exist
-var ARG_VALS;
+var ARG_VALS, gradesFile;
 
 function verifyArgs() {
     ARG_VALS = parser.parseArgs();
@@ -92,10 +91,15 @@ function verifyArgs() {
 
 verifyArgs();
 
-var grades, course, data;
-
 // Specify encoding to return a string
-grades = fs.readFileSync(ARG_VALS.grades_file, { encoding: 'utf8'});
+gradesFile = fs.readFileSync(ARG_VALS.grades_file, { encoding: 'utf8'});
+
+
+postGrades(ARG_VALS, gradesFile, function(err, resp) {
+    
+});
+
+var grades, course, data;
 
 course = new Canvas(ARG_VALS.url, { token: ARG_VALS.token } );
 
