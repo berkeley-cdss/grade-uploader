@@ -16,8 +16,11 @@ upload-grades [params]
 ```
 var postGrades = require('canvas-grade-uploader');
 
-postGrades({}); // See below for options
+postGrades(options, data, callback); // See below for options
 ```
 
 **NOTE** The module interface is currently a work in progress.
 
+## Configuration
+
+## CSV Format

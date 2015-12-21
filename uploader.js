@@ -44,7 +44,7 @@ function parseCSV(opts, str) {
 
 
 module.exports = function postGrades (options, data, callback) {
-    var course, gradesData;
+    var course, gradesData, url;
     course = new Canvas(
         options.url,
         {
@@ -54,9 +54,36 @@ module.exports = function postGrades (options, data, callback) {
     
     gradesData = parseCSV(opts, data);
     
+    url = `${cs10.baseURL}assignments/${assnID}/submissions/update_grades`;
     
 };
 
+
+
+
+/**
+    This posts multiple grades to a single assignment at once.
+    Grades should be of the form: { sid: grade }
+    Note, bCourses is whacky and updates grades in an async manner:
+
+ **/
+function bulkGradeUpload(course, url, assnID, grades, msg) {
+    var form = {};
+    
+    for (sid in grades) {
+        form[`grade_data[${sid}][posted_grade]`] = grades[sid];
+    }
+    course.post(url, '', form, function(error, response, body) {
+        var notify = msg ? msg.send : console.log;
+        if (error || !body || body.errors) {
+            notify('Uh, oh! An error occurred');
+            notify(error);
+            notify(body.errors || 'No error message...');
+            return;
+        }
+        notify('Success?!');
+    });
+};
 
 
 // Now post the grades....
@@ -72,8 +99,12 @@ function postGrade(name, sid, score, num) {
     submissionPath += sid;
     submissionALT  += sid;
 
-    course.put(submissionPath , '', scoreForm,
-            callback(name, sid, score, i));
+    course.put(
+        submissionPath,
+        '',
+        scoreForm,
+        callback(name, sid, score, i)
+    );
 
     // Access in SID and points in the callback
     function callback(name, sid, score, i) {
@@ -84,33 +115,13 @@ function postGrade(name, sid, score, num) {
             // TODO: Make an error function
             // Absence of a grade indicates an error.
             // WHY DONT I CHECK HEADERS THATS WHAT THEY ARE FOR
-            if (error || !body || body.errors) {
+            if (error || !body || body.errors || response.statusCode >= 400) {
                 var errorMsg = 'Problem: SID: ' + sid + ' NAME: ' + name +
                                 ' SCORE: ' + score;
                 if (error) {
                     console.log(error);
                 }
                 // Well, shit... just report error
-                if (body && body.errors && body.errors[0]) {
-                    errorMsg += '\nERROR:\t' + body.errors[0].message;
-                }
-                errorMsg += '\n\t' + submissionPath;
-                console.log(errorMsg);
-                // course.put(submissionALT , '', scoreForm,
-//                     loginCallback(name, sid, score));
-            }
-        };
-    }
-
-    // A modified call back for when sis_login_id is used
-    // THese should really be condenced but I didn't want to figure
-    // out a proper base case for a recursive callback...lazy....
-    function loginCallback(name, sid, score) {
-        return function(error, response, body) {
-            var errorMsg = 'Problem: SID: ' + sid + ' NAME: ' + name +
-                           ' SCORE: ' + score;
-           if (error || !body || body.errors || !body.grade || body.grade != score) {
-                console.log(error);
                 if (body && body.errors && body.errors[0]) {
                     errorMsg += '\nERROR:\t' + body.errors[0].message;
                 }
@@ -123,9 +134,9 @@ function postGrade(name, sid, score, num) {
 
 
 // Post grades; skip header file
-console.log('Posting ' + (data.length - 1) + ' grades.');
-for (var i = 1; i < data.length; i += 1) {
-    student = data[i];
-    postGrade(student[nameCol], student[sidCol], student[scoreCol], i);
-}
+console.log('Posting ' + ('test'.length - 1) + ' grades.');
+// for (var i = 1; i < data.length; i += 1) {
+//     student = data[i];
+//     postGrade(student[nameCol], student[sidCol], student[scoreCol], i);
+// }
 
