@@ -9,7 +9,7 @@ var ArgumentParser = require('argparse').ArgumentParser;
 
 // Handle Command Line Args
 var parser = new ArgumentParser({
-  version: '1.0.0',
+  version: '1.0.1',
   addHelp: true,
   description: 'This script uploads a CSV file to the specified Canvas course.',
   epilogue: 'THIS NEEDS TO BE WRITTEN...should describe process for getting a token.'
@@ -30,9 +30,10 @@ parser.addArgument(
     }
 );
 parser.addArgument(
-    ['grades-csv'],
+    ['-f', '--file'],
     {
         help: 'A CSV file of grades. It must include a "SID" column and a "grade" column.',
+        required: true,
         positional: 1
     }
 );
