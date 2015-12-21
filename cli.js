@@ -9,7 +9,7 @@ var ArgumentParser = require('argparse').ArgumentParser;
 
 // Handle Command Line Args
 var parser = new ArgumentParser({
-  version: '0.0.1',
+  version: '1.0.0',
   addHelp: true,
   description: 'This script uploads a CSV file to the specified Canvas course.',
   epilogue: 'THIS NEEDS TO BE WRITTEN...should describe process for getting a token.'

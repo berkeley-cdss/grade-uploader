@@ -1,8 +1,8 @@
 {
   "name": "canvas-grade-uploader",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Upload a CSV file of grades to Canvas",
-  "main": "./upload-grades.js",
+  "main": "./uploader.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -30,7 +30,7 @@
     "url": "https://github.com/cs10/grade-uploader/issues"
   },
   "bin": {
-    "upload-grades": "./upload-grades.js"
+    "grade-uploader": "./cli.js"
   },
   "homepage": "https://github.com/cs10/grade-uploader"
 }
