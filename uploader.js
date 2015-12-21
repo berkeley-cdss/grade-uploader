@@ -32,9 +32,9 @@ function parseCSV(opts, str) {
 
     // TODO:
     // inspect csv.meta.truncated and csv.errors
-
     csvObj.data.forEach(function (lineData) {
         var sid, grade, name;
+
         sid = lineData[SID];
         grade = lineData[SCORE];
         name = lineData[NAME];
@@ -49,6 +49,7 @@ function parseCSV(opts, str) {
 
 module.exports = function postGrades (options, data, callback) {
     var course, gradesData, url;
+    
     course = new Canvas(
         options.url,
         { token: options.token }
@@ -102,9 +103,11 @@ function bulkGradeUpload(course, url, data, cb) {
 // https://bcourses.berkeley.edu/doc/api/progress.html
 // the state of the job one of 'queued', 'running', 'completed', 'failed'
 function monitorProgress(course, id, callback) {
-    var timeoutID, delay = 100,
+    var timeoutID, delay = 500,
         prevCompletion = null, prevState = null;
 
+    // Use a small delay to prevent killing any servers
+    // since the progress API leaves no choice other than polling.
     setTimeout(function() {
         course.get(`progress/${id}/`, {}, function(err, resp, body) {
             if (err || !body || body.errors) {
@@ -129,7 +132,7 @@ function monitorProgress(course, id, callback) {
                     prevState = body.state;
                     prevCompletion = body.completion;
                 } else {
-                    cb(`Canvas State: ${body.workflow_state}`);
+                    callback(`Canvas State: ${body.workflow_state}`);
                 }
                 monitorProgress(course, id, callback);
             }

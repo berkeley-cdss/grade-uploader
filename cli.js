@@ -30,11 +30,10 @@ parser.addArgument(
     }
 );
 parser.addArgument(
-    ['-f', '--file'],
+    ['-f', '--file' ],
     {
-        help: 'A CSV file of grades. It must include a "SID" column and a "grade" column.',
-        required: true,
-        positional: 1
+        help: 'A CSV file of grades. It must include a "SID" column and a "Total Score" column.',
+        required: true
     }
 );
 parser.addArgument(
@@ -57,7 +56,7 @@ parser.addArgument(
     [ '-uid', '--user-id-format' ],
     {
         // TODO: Un-Berkeley-ify this option
-        help: 'Canvas SIS id format. This currently defaults to `sis_user_id` which is used at UC Berkeley.' +
+        help: 'Canvas SIS id format. This currently defaults to "sis_user_id" which is used at UC Berkeley.' +
         '\nThis controls what ID options Canvas uses to find a student.',
         defaultValue: 'sis_user_id',
         choices: [
@@ -71,35 +70,15 @@ parser.addArgument(
 
 // TODO: Header SID
 // TODO: Header Grade
-// TODO: Name -- maybe this should be a , separated list?
 
 // Verify Args Exist
 var ARG_VALS, gradesFile;
 
-function verifyArgs() {
-    var ARGS = parser.parseArgs(),
-        errors = [];
-
-    // This check is necessary because CANVAS_TOKEN could be undefied.
-    if (!ARGS.token) {
-        errors.push('Please export the CANVAS_TOKEN variable or provide token with -t.');
-    }
-
-    if (errors.length) {
-        console.error('The following errors occurred:');
-        console.error('\t' + errors.join('\n\t'));
-        parser.printHelp();
-        process.exit(1);
-    }
-    
-    return ARGS;
-}
-
-ARG_VALS = verifyArgs();
+ARG_VALS = parser.parseArgs();
 
 // Specify encoding to return a string
 gradesFile = fs.readFileSync(ARG_VALS.file, { encoding: 'utf8'});
 
+// TODO: make the callback be a more useful function.
 postGrades(ARG_VALS, gradesFile, console.log);
 
- 

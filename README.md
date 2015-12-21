@@ -23,6 +23,8 @@ There are two use cases:
 	```
 	grade-uploader -t [token] -c 1268501 -a 7148451 -f ~/Desktop/Midterm_scores.csv
 	```
+	* When using the command line, you can optionally define `CANVAS_TOKEN` in your environment. This will be used if no `-t` option is provided.
+
 2. As a module:
 	```
 	var postGrades = require('canvas-grade-uploader');
@@ -30,7 +32,7 @@ There are two use cases:
 	postGrades(options, data, callback); // See below for options
 	```
 
-**NOTE** The module interface is currently a work in progress.
+**NOTE** The module interface is currently a work in progress. Breaking changes to this interface will be semver-minor, at least until it's fully stable.
 
 ## Configuration
 The grade uploader uploads grades to a specific Canvas assignment. To do this a few details are required. The command line help will walk you through most of them.
@@ -59,11 +61,39 @@ This tool was built to speed up working with [Gradescope](https://gradescope.com
 
 The CSV file requires the following values:
 
-* SID
-* Total Score
+* "SID" -- This is the unique user ID for each student.
+* "Total Score" -- This is the score that each user will receive.
+* Optional "Name" -- The name column currently isn't used, but might be for debugging in the future. (Really, it's much much nicer to deal with names over IDs when possible.)
 
 ## Default Values
+Currently, there are a couple default values which as "Berkeley-specific". If this tool gets enough use, I'll gladly change them…
+
+* URL, `-u` defaults to: `https://bcourses.berkeley.edu`
+* User ID format, `-uid` defaults to: `sis_user_id`. This parameter controls how Canvas interprets user IDs. See [this][sid-id].
+
+(In the future, I'd consider supporting some means of having user-default parameters, so please submit a PR if you'd like!)
+
+[sid-id]: http://bjc.link/canvassisid
 
 ## Options and Callback Formats
+Using this as a module requires 3 parameters:
+
+* `options`: A JS object, with keys that mirror the command line arguments. _Note_: in this form, the only defaults that are applied are the CSV column names. The file parameter is not required.
+	```
+	{
+	  course_id: '1268501',
+	  assignment_id: '7148451',
+	  url: 'https://bcourses.berkeley.edu/',
+	  token: '<token>',
+	  user_id_format: 'sis_user_id'
+	}
+	```
+* `data`: This is the CSV data, as a string.
+* `callback`: This is called with a string, updating the progress of uploading grades. Note that it will be called quite a few times in the process uploading grades.
+	* **WARNING** This will be updated to have a signature like `(err, resp)` very soon.
+
 
 ## Tips
+* If you want to test things, use `http://<domain>.beta.instructure.com/`
+	* Instructure's beta instances have a separate DB that is supposed to be purged and refreshed each week.
+
