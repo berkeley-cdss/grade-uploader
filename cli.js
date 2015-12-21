@@ -40,7 +40,7 @@ parser.addArgument(
     [ '-u', '--url' ],
     {
         help: 'Specify a URL of the Canvas instance to use.\n\tThis currently defaults to Berkeley bCourses.',
-        defaultValue: 'https://bcourses.berkeley.edu',
+        defaultValue: 'https://bcourses.berkeley.edu/',
         required: false
     }
 );
@@ -97,10 +97,8 @@ function verifyArgs() {
 ARG_VALS = verifyArgs();
 
 // Specify encoding to return a string
-gradesFile = fs.readFileSync(ARG_VALS.grades_file, { encoding: 'utf8'});
+gradesFile = fs.readFileSync(ARG_VALS['grades-csv'], { encoding: 'utf8'});
 
+postGrades(ARG_VALS, gradesFile, console.log);
 
-postGrades(ARG_VALS, gradesFile, function(err, resp) {
-    
-});
  

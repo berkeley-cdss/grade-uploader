@@ -14,7 +14,8 @@ function parseCSV(opts, str) {
         result = {
             names: {},
             scores: {}
-        };
+        },
+        SID, SCORE, NAME;
 
     // Options: http://papaparse.com/docs#config
     csvObj = Papa.parse(str, {
@@ -28,17 +29,20 @@ function parseCSV(opts, str) {
     SCORE = 'Total Score' || opts.headers.gradeCol;
     NAME = 'Name' || opts.headers.nameCol;
     SID = 'SID'  || opts.headers.sidCol;
-    
-    csvObj.forEach(function (lineData) {
+
+    // TODO:
+    // inspect csv.meta.truncated and csv.errors
+
+    csvObj.data.forEach(function (lineData) {
         var sid, grade, name;
         sid = lineData[SID];
         grade = lineData[SCORE];
         name = lineData[NAME];
-        
-        result.names[sid] = name;
-        result.scores[sid] = grade;   
+
+        result.names[`${opts['user_id_format']}:${sid}`] = name;
+        result.scores[`${opts['user_id_format']}:${sid}`] = grade;
     });
-    
+
     return result;
 }
 
@@ -47,18 +51,23 @@ module.exports = function postGrades (options, data, callback) {
     var course, gradesData, url;
     course = new Canvas(
         options.url,
-        {
-            token: options.token
-        }
+        { token: options.token }
     );
-    
-    gradesData = parseCSV(opts, data);
-    
-    url = `${cs10.baseURL}assignments/${assnID}/submissions/update_grades`;
-    
+
+    gradesData = parseCSV(options, data);
+
+    url = uploadURL(options.course_id, options.assignment_id);
+
+    bulkGradeUpload(course, url, gradesData, callback);
 };
 
 
+/**
+    Return the URL for a bulk upload of grades to a canvas assignment.
+*/
+function uploadURL(course, assignment) {
+    return `courses/${course}/assignments/${assignment}/submissions/update_grades`;
+}
 
 
 /**
@@ -67,76 +76,63 @@ module.exports = function postGrades (options, data, callback) {
     Note, bCourses is whacky and updates grades in an async manner:
 
  **/
-function bulkGradeUpload(course, url, assnID, grades, msg) {
+function bulkGradeUpload(course, url, data, cb) {
     var form = {};
-    
-    for (sid in grades) {
-        form[`grade_data[${sid}][posted_grade]`] = grades[sid];
+
+    for (sid in data.scores) {
+        form[`grade_data[${sid}][posted_grade]`] = data.scores[sid];
     }
-    course.post(url, '', form, function(error, response, body) {
-        var notify = msg ? msg.send : console.log;
+
+    // This returns a canvas "progress" object
+    course.post(url, {}, form, function(error, resp, body) {
         if (error || !body || body.errors) {
-            notify('Uh, oh! An error occurred');
-            notify(error);
-            notify(body.errors || 'No error message...');
+            cb('Uh, oh! An error occurred');
+            cb(error);
+            cb(body.errors || 'No error message...');
             return;
         }
-        notify('Success?!');
+        cb('Course Updates Posted');
+        cb(`URL ${body.url}`);
+
+        monitorProgress(course, body.id, cb);
     });
 };
 
+// Progress Object Docs
+// https://bcourses.berkeley.edu/doc/api/progress.html
+// the state of the job one of 'queued', 'running', 'completed', 'failed'
+function monitorProgress(course, id, callback) {
+    var timeoutID, delay = 100,
+        prevCompletion = null, prevState = null;
 
-// Now post the grades....
-// TODO: The extenstion students need a mapping like for CS10 lab checkoffs.
-function postGrade(name, sid, score, num) {
-    var scoreForm      = 'submission[posted_grade]=' + score,
-        submissionBase = '/courses/' + ARG_VALS.course +
-                         '/assignments/' + ARG_VALS.assignments + '/submissions/',
-        submissionPath = submissionBase + ARG_VALS.sid_type + ':',
-        submissionALT  = submissionBase + 'sis_login_id:';
-
-    // FIXME -- this is dumb.
-    submissionPath += sid;
-    submissionALT  += sid;
-
-    course.put(
-        submissionPath,
-        '',
-        scoreForm,
-        callback(name, sid, score, i)
-    );
-
-    // Access in SID and points in the callback
-    function callback(name, sid, score, i) {
-        if (! (i % 15)) {
-            console.log('Progress: ' + i + ' grades posted.');
-        }
-        return function(error, response, body) {
-            // TODO: Make an error function
-            // Absence of a grade indicates an error.
-            // WHY DONT I CHECK HEADERS THATS WHAT THEY ARE FOR
-            if (error || !body || body.errors || response.statusCode >= 400) {
-                var errorMsg = 'Problem: SID: ' + sid + ' NAME: ' + name +
-                                ' SCORE: ' + score;
-                if (error) {
-                    console.log(error);
+    setTimeout(function() {
+        course.get(`progress/${id}/`, {}, function(err, resp, body) {
+            if (err || !body || body.errors) {
+                callback('Error!');
+            } else {
+                if (body.workflow_state == 'completed' || body.workflow_state === 'failed') {
+                    // callback('Error! Upload Failed');
+                    callback('Done!');
+                    if (body.message) {
+                        callback(`\t${body.message}`);
+                    }
+                    return;
                 }
-                // Well, shit... just report error
-                if (body && body.errors && body.errors[0]) {
-                    errorMsg += '\nERROR:\t' + body.errors[0].message;
+                if (body.completion !== prevCompletion ||
+                        body.workflow_state !== prevState) {
+                    if (body.completion) {
+                        callback(`Progress ${body.completion}%`);
+                    }
+                    if (body.message) {
+                        callback(`\t${body.message}`);
+                    }
+                    prevState = body.state;
+                    prevCompletion = body.completion;
+                } else {
+                    cb(`Canvas State: ${body.workflow_state}`);
                 }
-                errorMsg += '\n\t' + submissionPath;
-                console.log(errorMsg);
+                monitorProgress(course, id, callback);
             }
-        };
-    }
+        });
+    }, delay);
 }
-
-
-// Post grades; skip header file
-console.log('Posting ' + ('test'.length - 1) + ' grades.');
-// for (var i = 1; i < data.length; i += 1) {
-//     student = data[i];
-//     postGrade(student[nameCol], student[sidCol], student[scoreCol], i);
-// }
-
