@@ -98,7 +98,7 @@ function verifyArgs() {
 ARG_VALS = verifyArgs();
 
 // Specify encoding to return a string
-gradesFile = fs.readFileSync(ARG_VALS['grades-csv'], { encoding: 'utf8'});
+gradesFile = fs.readFileSync(ARG_VALS.file, { encoding: 'utf8'});
 
 postGrades(ARG_VALS, gradesFile, console.log);
 

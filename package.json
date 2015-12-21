@@ -1,6 +1,6 @@
 {
   "name": "canvas-grade-uploader",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Upload a CSV file of grades to Canvas",
   "main": "./uploader.js",
   "scripts": {
