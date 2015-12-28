@@ -40,6 +40,7 @@ The grade uploader uploads grades to a specific Canvas assignment. To do this a 
 Canvas assignment and course IDs are easily obtained from the URL of the assignments page.
 
 For example:
+
 ```
 https://bcourses.berkeley.edu/courses/1268501/assignments/7148451
 ```
@@ -69,7 +70,7 @@ The CSV file requires the following values:
 Currently, there are a couple default values which as "Berkeley-specific". If this tool gets enough use, I'll gladly change them…
 
 * URL, `-u` defaults to: `https://bcourses.berkeley.edu`
-* User ID format, `-uid` defaults to: `sis_user_id`. This parameter controls how Canvas interprets user IDs. See [this][sid-id].
+* User ID format, `-sid` defaults to: `sis_user_id`. This parameter controls how Canvas interprets user IDs. See [this][sid-id].
 
 (In the future, I'd consider supporting some means of having user-default parameters, so please submit a PR if you'd like!)
 

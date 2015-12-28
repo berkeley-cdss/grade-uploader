@@ -53,7 +53,7 @@ parser.addArgument(
     }
 ); 
 parser.addArgument(
-    [ '-uid', '--user-id-format' ],
+    [ '-sid', '--student-id-format' ],
     {
         // TODO: Un-Berkeley-ify this option
         help: 'Canvas SIS id format. This currently defaults to "sis_user_id" which is used at UC Berkeley.' +

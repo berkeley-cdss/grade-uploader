@@ -17,6 +17,8 @@ function parseCSV(opts, str) {
         },
         SID, SCORE, NAME;
 
+    // Prevent newlines from turning to Canvas Errors
+    str = str.trim();
     // Options: http://papaparse.com/docs#config
     csvObj = Papa.parse(str, {
         header: true,
