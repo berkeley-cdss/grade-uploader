@@ -89,14 +89,16 @@ function bulkGradeUpload(course, url, data, cb) {
 
     // This returns a canvas "progress" object
     course.post(url, {}, form, function(error, resp, body) {
+        if (body && body.url) {
+            cb(`URL ${body.url}`);
+        }
         if (error || !body || body.errors) {
             cb('Uh, oh! An error occurred');
-            cb(error);
+            cb(error || '');
             cb(body.errors || 'No error message...');
             return;
         }
         cb('Course Updates Posted');
-        cb(`URL ${body.url}`);
 
         monitorProgress(course, body.id, cb);
     });
