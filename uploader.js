@@ -19,6 +19,7 @@ function parseCSV(opts, str) {
 
     // Prevent newlines from turning to Canvas Errors
     str = str.trim();
+    
     // Options: http://papaparse.com/docs#config
     csvObj = Papa.parse(str, {
         header: true,
@@ -41,8 +42,8 @@ function parseCSV(opts, str) {
         grade = lineData[SCORE];
         name = lineData[NAME];
 
-        result.names[`${opts['user_id_format']}:${sid}`] = name;
-        result.scores[`${opts['user_id_format']}:${sid}`] = grade;
+        result.names[`${opts['student_id_format']}:${sid}`] = name;
+        result.scores[`${opts['student_id_format']}:${sid}`] = grade;
     });
 
     return result;
