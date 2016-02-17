@@ -108,8 +108,10 @@ function bulkGradeUpload(course, url, data, cb) {
 // https://bcourses.berkeley.edu/doc/api/progress.html
 // the state of the job one of 'queued', 'running', 'completed', 'failed'
 function monitorProgress(course, id, callback) {
-    var timeoutID, delay = 500,
-        prevCompletion = null, prevState = null;
+    var timeoutID,
+        delay = 500,
+        prevCompletion = null,
+        prevState = null;
 
     // Use a small delay to prevent killing any servers
     // since the progress API leaves no choice other than polling.
@@ -117,30 +119,30 @@ function monitorProgress(course, id, callback) {
         course.get(`progress/${id}/`, {}, function(err, resp, body) {
             if (err || !body || body.errors) {
                 callback('Error!');
-            } else {
-                if (body.workflow_state == 'completed' || body.workflow_state === 'failed') {
-                    // callback('Error! Upload Failed');
-                    callback('Done!');
-                    if (body.message) {
-                        callback(`\t${body.message}`);
-                    }
-                    return;
-                }
-                if (body.completion !== prevCompletion ||
-                        body.workflow_state !== prevState) {
-                    if (body.completion) {
-                        callback(`Progress ${body.completion}%`);
-                    }
-                    if (body.message) {
-                        callback(`\t${body.message}`);
-                    }
-                    prevState = body.state;
-                    prevCompletion = body.completion;
-                } else {
-                    callback(`Canvas State: ${body.workflow_state}`);
-                }
-                monitorProgress(course, id, callback);
+                return;
             }
+            if (body.workflow_state == 'completed' || body.workflow_state === 'failed') {
+                // callback('Error! Upload Failed');
+                callback('Done!');
+                if (body.message) {
+                    callback(`\t${body.message}`);
+                }
+                return;
+            }
+            if (body.completion !== prevCompletion || body.workflow_state !== prevState) {
+                if (body.completion) {
+                    callback(`Progress ${body.completion}%`);
+                }
+                if (body.message) {
+                    callback(`\t${body.message}`);
+                }
+                prevState = body.state;
+                prevCompletion = body.completion;
+            } else {
+                callback(`Canvas State: ${body.workflow_state}`);
+            }
+           
+            monitorProgress(course, id, callback);
         });
     }, delay);
 }
