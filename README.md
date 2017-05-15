@@ -6,24 +6,24 @@ A simple tool to handle grade uploading to [Canvas], a learning management syste
 
 ## Installation
 The grade uploader works well as a command line tool. If you're using it this way be sure to use the `-g` option:
+
 ```
 npm install -g canvas-grade-uploader
 ```
-
 
 ## Usage
 There are two use cases:
 
 1. Command line tool:
 	```
-	grade-uploader [leave blank for short help]
-	usage: grade-uploader [-h] [-v] -c COURSE_ID -a ASSIGNMENT_ID -f FILE [-u URL] -t
-              TOKEN [-uid {"",sis_login_id,sis_user_id}]
+	$ grade-uploader
+	usage: grade-uploader [-h] [-v] -c COURSE_ID -a ASSIGNMENT_ID -f FILE [-u URL] -t TOKEN [-uid {"",sis_login_id,sis_user_id}]
 	```
 	```
-	grade-uploader -t [token] -c 1268501 -a 7148451 -f ~/Desktop/Midterm_scores.csv
+	$ grade-uploader -t ABCED...123 -c 1268501 -a 7148451 -f ~/Desktop/Midterm_scores.csv
 	```
 	* When using the command line, you can optionally define `CANVAS_TOKEN` in your environment. This will be used if no `-t` option is provided.
+	* e.g. `export CANVAS_TOKEN='ABCEDF...'`
 
 2. As a module:
 	```
@@ -50,7 +50,7 @@ https://bcourses.berkeley.edu/courses/1268501/assignments/7148451
 * Assignment ID: `7148451`
 
 ### Getting a Canvas Token
-Canvas authenticates users with Oauth Tokens. You can generate a token for yourself by visiting your personal settings page. There is Canvas [documentation][docs] about generating your own token.
+Canvas authenticates users with OAuth Tokens. You can generate a token for yourself by visiting your personal settings page. There is Canvas [documentation][docs] about generating your own token.
 
 The short version is: Visit this page.
 `https:/<canvas-instance>/profile/settings`
@@ -76,7 +76,7 @@ Currently, there are a couple default values which as "Berkeley-specific". If th
 
 [sid-id]: http://bjc.link/canvassisid
 
-## Options and Callback Formats
+## Programatic Options and Callback Formats
 Using this as a module requires 3 parameters:
 
 * `options`: A JS object, with keys that mirror the command line arguments. _Note_: in this form, the only defaults that are applied are the CSV column names. The file parameter is not required.
@@ -96,5 +96,6 @@ Using this as a module requires 3 parameters:
 
 ## Tips
 * If you want to test things, use `http://<domain>.beta.instructure.com/`
-	* Instructure's beta instances have a separate DB that is supposed to be purged and refreshed each week.
+	* Instructure's beta instances have a separate DB that is supposed to be purged and refreshed every few weeks.
+	* (This only applies if you're using a hosted Canvas instance.)
 
